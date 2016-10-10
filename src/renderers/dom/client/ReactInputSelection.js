@@ -35,6 +35,39 @@ function getFocusedElement() {
   return focusedElem;
 }
 
+function getElementsWithSelections(acc, win) {
+  acc = acc || [];
+  win = win || window;
+  var doc;
+  try {
+    doc = win.document;
+  } catch (e) {
+    return acc;
+  }
+  var element = null;
+  if (win.getSelection) {
+    var selection = win.getSelection();
+    var startNode = selection.anchorNode;
+    var endNode = selection.focusNode;
+    var startOffset = selection.anchorOffset;
+    var endOffset = selection.focusOffset;
+    if (startNode.childNodes.length) {
+      if (startNode.childNodes[startOffset] === endNode.childNodes[endOffset]) {
+        element = startNode.childNodes[startOffset];
+      }
+    } else {
+      element = startNode;
+    }
+  } else if (doc.selection) {
+    var range = doc.selection.createRange();
+    element = range.parentElement();
+  }
+  if (ReactInputSelection.hasSelectionCapabilities(element)) {
+    acc = acc.concat(element);
+  }
+  return Array.prototype.reduce.call(win.frames, getElementsWithSelections, acc);
+}
+
 /**
  * @ReactInputSelection: React input selection module. Based on Selection.js,
  * but modified to be suitable for react and has a couple of bug fixes (doesn't
@@ -53,13 +86,15 @@ var ReactInputSelection = {
   },
 
   getSelectionInformation: function() {
-    var focusedElem = getFocusedElement();
+    var focusedElement = getFocusedElement();
     return {
-      focusedElem: focusedElem,
-      selectionRange:
-          ReactInputSelection.hasSelectionCapabilities(focusedElem) ?
-          ReactInputSelection.getSelection(focusedElem) :
-          null,
+      focusedElement: focusedElement,
+      activeElements: getElementsWithSelections().map(function(element) {
+        return {
+          element: element,
+          selectionRange: ReactInputSelection.getSelection(element),
+        };
+      }),
     };
   },
 
@@ -69,18 +104,27 @@ var ReactInputSelection = {
    * nodes and place them back in, resulting in focus being lost.
    */
   restoreSelection: function(priorSelectionInformation) {
-    var curFocusedElem = getFocusedElement();
-    var priorFocusedElem = priorSelectionInformation.focusedElem;
-    var priorSelectionRange = priorSelectionInformation.selectionRange;
-    if (curFocusedElem !== priorFocusedElem &&
-        isInDocument(priorFocusedElem)) {
-      if (ReactInputSelection.hasSelectionCapabilities(priorFocusedElem)) {
-        ReactInputSelection.setSelection(
-          priorFocusedElem,
-          priorSelectionRange
-        );
+    priorSelectionInformation.activeElements.forEach(function(activeElement) {
+      var element = activeElement.element;
+      if (!isInDocument(element) ||
+          getActiveElement(element.ownerDocument) === element) {
+        return;
       }
-      focusNode(priorFocusedElem);
+      if (!ReactInputSelection.hasSelectionCapabilities(element)) {
+        return;
+      }
+      ReactInputSelection.setSelection(
+        element,
+        activeElement.selectionRange
+      );
+      focusNode(element);
+    });
+
+    var curFocusedElement = getFocusedElement();
+    var priorFocusedElement = priorSelectionInformation.focusedElement;
+    if (curFocusedElement !== priorFocusedElement &&
+        isInDocument(priorFocusedElement)) {
+      focusNode(priorFocusedElement);
     }
   },
 
