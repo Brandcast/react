@@ -22,6 +22,12 @@ describe('ReactInputSelection', () => {
     var instance = ReactTestUtils.renderIntoDocument(element);
     return ReactDOM.findDOMNode(instance);
   };
+  var makeGetSelection = (win = window) => () => ({
+    anchorNode: win.document.activeElement,
+    focusNode: win.document.activeElement,
+    anchorOffset: win.document.activeElement && win.document.activeElement.selectionStart,
+    focusOffset: win.document.activeElement && win.document.activeElement.selectionEnd,
+  });
 
   beforeEach(() => {
     jest.resetModuleRegistry();
@@ -108,7 +114,7 @@ describe('ReactInputSelection', () => {
     });
 
     it('gets selection on inputs in iframes', () => {
-      var iframe = document.createElement('iframe');
+      const iframe = document.createElement('iframe');
       document.body.appendChild(iframe);
       const input = document.createElement('input');
       input.value = textValue;
@@ -135,7 +141,7 @@ describe('ReactInputSelection', () => {
     });
 
     it('sets selection on inputs in iframes', () => {
-      var iframe = document.createElement('iframe');
+      const iframe = document.createElement('iframe');
       document.body.appendChild(iframe);
       const input = document.createElement('input');
       input.value = textValue;
@@ -150,6 +156,9 @@ describe('ReactInputSelection', () => {
 
   describe('getSelectionInformation/restoreSelection', () => {
     it('gets and restores selection for inputs that get remounted', () => {
+      // Mock window getSelection
+      window.getSelection =
+          window.getSelection || makeGetSelection(window);
       var input = document.createElement('input');
       input.value = textValue;
       document.body.appendChild(input);
@@ -173,6 +182,45 @@ describe('ReactInputSelection', () => {
       expect(input.selectionEnd).toBe(10);
 
       document.body.removeChild(input);
+    });
+
+    it('gets and restores selection for inputs in an iframe that get remounted', () => {
+      var iframe = document.createElement('iframe');
+      iframe.setAttribute('tabIndex', 0);
+      document.body.appendChild(iframe);
+      var iframeDoc = iframe.contentDocument;
+      // Mock window and iframe getSelection
+      window.getSelection =
+          window.getSelection || makeGetSelection(window);
+      iframeDoc.defaultView.getSelection =
+          iframeDoc.defaultView.getSelection || makeGetSelection(iframeDoc.defaultView);
+
+      var input = document.createElement('input');
+      input.value = textValue;
+      iframeDoc.body.appendChild(input);
+      // Focus iframe first to get around jsdom limitations
+      iframe.focus();
+      input.focus();
+      input.selectionStart = 1;
+      input.selectionEnd = 10;
+      var selectionInfo = ReactInputSelection.getSelectionInformation();
+      expect(selectionInfo.focusedElement).toBe(input);
+      expect(selectionInfo.activeElements[0].selectionRange).toEqual({start: 1, end: 10});
+      expect(document.activeElement).toBe(iframe);
+      expect(iframeDoc.activeElement).toBe(input);
+
+      input.setSelectionRange(0, 0);
+      iframeDoc.body.removeChild(input);
+      expect(iframeDoc.activeElement).not.toBe(input);
+      expect(input.selectionStart).not.toBe(1);
+      expect(input.selectionEnd).not.toBe(10);
+      iframeDoc.body.appendChild(input);
+      ReactInputSelection.restoreSelection(selectionInfo);
+      expect(iframeDoc.activeElement).toBe(input);
+      expect(input.selectionStart).toBe(1);
+      expect(input.selectionEnd).toBe(10);
+
+      document.body.removeChild(iframe);
     });
   });
 });
