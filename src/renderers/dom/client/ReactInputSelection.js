@@ -51,7 +51,7 @@ function getElementsWithSelections(acc, win) {
     var endNode = selection.focusNode;
     var startOffset = selection.anchorOffset;
     var endOffset = selection.focusOffset;
-    if (startNode.childNodes.length) {
+    if (startNode && startNode.childNodes.length) {
       if (startNode.childNodes[startOffset] === endNode.childNodes[endOffset]) {
         element = startNode.childNodes[startOffset];
       }
