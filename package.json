@@ -1,6 +1,7 @@
 {
   "name": "react-build",
   "private": true,
+  "main": "react.js",
   "version": "16.0.0-alpha",
   "devDependencies": {
     "aliasify": "^2.0.0",
