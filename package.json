@@ -1,8 +1,7 @@
 {
   "name": "react",
-  "private": true,
   "main": "react.js",
-  "version": "16.0.0-alpha",
+  "version": "15.3.3",
   "devDependencies": {
     "aliasify": "^2.0.0",
     "art": "^0.10.1",
