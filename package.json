@@ -1,6 +1,5 @@
 {
-  "name": "react-build",
-  "private": true,
+  "name": "react",
   "version": "15.4.1",
   "devDependencies": {
     "aliasify": "^2.0.0",
@@ -43,7 +42,7 @@
     "eslint": "1.10.3",
     "eslint-plugin-react": "4.1.0",
     "eslint-plugin-react-internal": "file:eslint-rules",
-    "fbjs": "^0.8.4",
+    "fbjs": "Brandcast/fbjs-built#5b7738c",
     "fbjs-scripts": "^0.6.0",
     "flow-bin": "^0.31.0",
     "glob": "^6.0.1",
@@ -81,7 +80,6 @@
     "build": "grunt build",
     "linc": "git diff --name-only --diff-filter=ACMRTUB `git merge-base HEAD master` | grep '\\.js$' | xargs eslint --",
     "lint": "grunt lint",
-    "postinstall": "node node_modules/fbjs-scripts/node/check-dev-engines.js package.json",
     "test": "jest",
     "flow": "flow"
   },
