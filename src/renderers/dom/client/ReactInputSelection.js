@@ -56,12 +56,12 @@ function getElementsWithSelections(acc, win) {
       var startOffset = selection.anchorOffset;
       var endOffset = selection.focusOffset;
       if (startNode && startNode.childNodes.length) {
-          if (startNode.childNodes[startOffset] === endNode.childNodes[endOffset]) {
-              element = startNode.childNodes[startOffset];
-          }
+        if (startNode.childNodes[startOffset] === endNode.childNodes[endOffset]) {
+          element = startNode.childNodes[startOffset];
+        }
       } else {
-          element = startNode;
-      }    
+        element = startNode;
+      }
     }
   } else if (doc.selection) {
     var range = doc.selection.createRange();
@@ -136,8 +136,9 @@ var ReactInputSelection = {
   restoreSelection: function(priorSelectionInformation) {
     priorSelectionInformation.activeElements.forEach(function(activeElement) {
       var element = activeElement.element;
-      if (isInDocument(element) &&
-          getActiveElement(element.ownerDocument) !== element) {
+      if (
+        isInDocument(element) && getActiveElement(element.ownerDocument) !== element
+      ) {
         if (ReactInputSelection.hasSelectionCapabilities(element)) {
           ReactInputSelection.setSelection(
             element,
@@ -150,8 +151,9 @@ var ReactInputSelection = {
 
     var curFocusedElement = getFocusedElement();
     var priorFocusedElement = priorSelectionInformation.focusedElement;
-    if (curFocusedElement !== priorFocusedElement &&
-        isInDocument(priorFocusedElement)) {
+    if (
+      curFocusedElement !== priorFocusedElement && isInDocument(priorFocusedElement)
+    ) {
       focusNodePreservingScroll(priorFocusedElement);
     }
   },
