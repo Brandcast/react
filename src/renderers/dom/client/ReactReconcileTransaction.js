@@ -14,26 +14,10 @@
 var CallbackQueue = require('CallbackQueue');
 var PooledClass = require('PooledClass');
 var ReactBrowserEventEmitter = require('ReactBrowserEventEmitter');
-var ReactInputSelection = require('ReactInputSelection');
 var ReactInstrumentation = require('ReactInstrumentation');
 var Transaction = require('Transaction');
 var ReactUpdateQueue = require('ReactUpdateQueue');
 
-
-/**
- * Ensures that, when possible, the selection range (currently selected text
- * input) is not disturbed by performing the transaction.
- */
-var SELECTION_RESTORATION = {
-  /**
-   * @return {Selection} Selection information.
-   */
-  initialize: ReactInputSelection.getSelectionInformation,
-  /**
-   * @param {Selection} sel Selection information returned from `initialize`.
-   */
-  close: ReactInputSelection.restoreSelection,
-};
 
 /**
  * Suppresses events (blur/focus) that could be inadvertently dispatched due to
@@ -87,7 +71,6 @@ var ON_DOM_READY_QUEUEING = {
  * each other.
  */
 var TRANSACTION_WRAPPERS = [
-  SELECTION_RESTORATION,
   EVENT_SUPPRESSION,
   ON_DOM_READY_QUEUEING,
 ];
